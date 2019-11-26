@@ -14,9 +14,15 @@ import com.abba.talentlmsapi.Models.User;
 import com.abba.talentlmsapi.R;
 import com.abba.talentlmsapi.Services.UserApi;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -50,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
         recyUsuarios.setLayoutManager(linearLayoutManager);
         recyUsuarios.setAdapter(adaptador);
 
-       // getAllUsuarios();
-        getUser();
+       //getAllUsuarios();
+       getUser();
 
 
     }
@@ -104,9 +110,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void getAllUsuarios() {
 
+
         Retrofit retrofit = new Retrofit.Builder()
-                //.baseUrl("https://socret-apps.herokuapp.com/")
-                .baseUrl("http://192.168.159.15:8080/talentolms/")
+                .baseUrl("https://socret-apps.herokuapp.com/")
+                //.baseUrl("http://192.168.159.15:8080/talentolms/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -151,7 +158,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
 
     }
 }

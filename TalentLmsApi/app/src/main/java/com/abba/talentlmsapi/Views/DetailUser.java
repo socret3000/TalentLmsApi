@@ -71,8 +71,6 @@ public class DetailUser extends AppCompatActivity {
         String idName = prefs.getString("id_key", null);
         id_user=id_us;
 
-
-
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://192.168.159.15:8080/talentolms/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -107,25 +105,6 @@ public class DetailUser extends AppCompatActivity {
                     txtCreacion.setText(user.getCreated_on());
 
 
-
-
-
-                    /*ArrayList<UserCourse> cursos=new ArrayList<>();
-                    cursos.addAll(user.getCourses());
-
-                    for(UserCourse curso:cursos)
-                    {
-                        String texto="";
-                        String nameCurso=curso.getName();
-                        String rol=curso.getRole();
-                        String inscrito=curso.getEnrolled_on();
-
-                        texto+="Nombre del curso: "+nameCurso+"\n";
-                        texto+="Rol: "+rol+"\n";
-                        texto+="Inscrito: "+inscrito+"\n";
-                        texto+="Completado: "+curso.getCompletion_percentage()+"\n\n";
-                        txtCourses.append(texto);
-                    }*/
 
                 }
 
