@@ -10,8 +10,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.abba.talentlmsapi.Interfaces.DetailUserP;
+import com.abba.talentlmsapi.Interfaces.IDetailUser;
 import com.abba.talentlmsapi.Models.User;
 import com.abba.talentlmsapi.Models.UserCourse;
+import com.abba.talentlmsapi.Presenters.DetailUserPresenter;
 import com.abba.talentlmsapi.R;
 import com.abba.talentlmsapi.Services.UserApi;
 import com.abba.talentlmsapi.Util.StringHelpers;
@@ -25,11 +28,13 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class DetailUser extends AppCompatActivity {
+public class DetailUser extends AppCompatActivity implements IDetailUser {
 
     Toolbar toolbar;
     TextView txtNombre,txtEmail,txtDescripcion,txtTypeUser,txtCreacion,txtStatus,txtCourses,myCourses;
     String id_user;
+
+    DetailUserPresenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +52,8 @@ public class DetailUser extends AppCompatActivity {
         myCourses=(TextView)findViewById(R.id.myCourses);
 
         setSupportActionBar(toolbar);
+        presenter=new DetailUserPresenter(this);
+
         //getSupportActionBar().setTitle("Usuario");
         getUser();
 
@@ -54,73 +61,55 @@ public class DetailUser extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intent=new Intent(DetailUser.this,CoursesUser.class);
-                intent.putExtra("id",id_user);
-                startActivityForResult(intent,1000);
+                goActivity();
+
 
             }
         });
 
     }
 
-    private void getUser() {
+    @Override
+    public void goActivity() {
 
+
+        Intent intent=new Intent(DetailUser.this,CoursesUser.class);
+        intent.putExtra("id",id_user);
+        startActivity(intent);
+
+    }
+
+    @Override
+    public void getUser() {
 
         SharedPreferences prefs = getSharedPreferences(StringHelpers.DATA_USER_LOGIN, MODE_PRIVATE);
         String id_us = prefs.getString("id_user",null);
         String idName = prefs.getString("id_key", null);
         id_user=id_us;
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.159.15:8080/talentolms/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
 
-        UserApi service = retrofit.create(UserApi.class);
-
-        Call<User> call=service.getUser(id_user);
-
-
-        call.enqueue(new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-
-                if(!response.isSuccessful())
-                {
-
-                    Toast.makeText(DetailUser.this, "Error: "+response.code(), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                else
-                {
-
-                    User user=response.body();
-                    String Full_name=user.getFirst_name()+" "+user.getLast_name();
-                    getSupportActionBar().setTitle(Full_name);
-                    txtNombre.setText(Full_name);
-                    txtEmail.setText(user.getEmail());
-                    txtDescripcion.setText(String.valueOf(user.getBio()));
-                    txtTypeUser.setText(user.getUser_type());
-                    txtStatus.setText(user.getStatus());
-                    txtCreacion.setText(user.getCreated_on());
-
-
-
-                }
-
-
-            }
-
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-
-                Toast.makeText(DetailUser.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
-
-
-
+       presenter.getUser(id_user);
 
     }
+
+    @Override
+    public void showUser(String full_name, String email, String descrip, String type_user, String status, String cretateOn) {
+
+        getSupportActionBar().setTitle(full_name);
+        txtNombre.setText(full_name);
+        txtEmail.setText(email);
+        txtDescripcion.setText(descrip);
+        txtTypeUser.setText(type_user);
+        txtStatus.setText(status);
+        txtCreacion.setText(cretateOn);
+
+    }
+
+    @Override
+    public void setError(String error) {
+
+        Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+
+    }
+
 }

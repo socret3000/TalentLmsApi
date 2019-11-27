@@ -8,8 +8,11 @@ import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
 import com.abba.talentlmsapi.Adapters.CoursesAdapter;
+import com.abba.talentlmsapi.Interfaces.ICourseUser;
+import com.abba.talentlmsapi.Interfaces.ICourseUserP;
 import com.abba.talentlmsapi.Models.User;
 import com.abba.talentlmsapi.Models.UserCourse;
+import com.abba.talentlmsapi.Presenters.CourseUserPresenter;
 import com.abba.talentlmsapi.R;
 import com.abba.talentlmsapi.Services.UserApi;
 
@@ -21,13 +24,15 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class CoursesUser extends AppCompatActivity {
+public class CoursesUser extends AppCompatActivity implements ICourseUser {
 
 
     Toolbar toolbar;
     RecyclerView recyUsuarios;
     CoursesAdapter adaptador;
     ArrayList<UserCourse> cursos=new ArrayList<>();
+
+    ICourseUserP presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +41,7 @@ public class CoursesUser extends AppCompatActivity {
 
         toolbar=(Toolbar)findViewById(R.id.toolbarCoursesUser);
         recyUsuarios=(RecyclerView)findViewById(R.id.recyUsuarios);
+        presenter=new CourseUserPresenter(this);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -55,55 +61,28 @@ public class CoursesUser extends AppCompatActivity {
 
     }
 
-    private void getData() {
+    @Override
+    public void getData() {
 
         Bundle bundle=new Bundle();
         bundle=getIntent().getExtras();
         String id=bundle.getString("id");
-        //String name=bundle.getString("name");
-       // getSupportActionBar().setTitle(name);
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.159.15:8080/talentolms/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        UserApi service = retrofit.create(UserApi.class);
-
-        Call<User> call=service.getUser(id);
-
-        call.enqueue(new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-
-                if(!response.isSuccessful())
-                {
-
-                    Toast.makeText(CoursesUser.this, "Error: "+response.code(), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                else
-                {
-
-                    User user=response.body();
-                   // ArrayList<UserCourse> curso=new ArrayList<>();
-                    cursos.addAll(user.getCourses());
-                    adaptador.notifyDataSetChanged();
-
-                }
-
-
-            }
-
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-
-                Toast.makeText(CoursesUser.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
-
+        presenter.getData(id);
 
 
     }
+
+    @Override
+    public void showCourses(ArrayList<UserCourse> curso) {
+
+        cursos.addAll(curso);
+        adaptador.notifyDataSetChanged();
+
+    }
+
+    @Override
+    public void showError(String error) {
+
+    }
+
 }

@@ -16,7 +16,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.abba.talentlmsapi.Interfaces.ILoginP;
+import com.abba.talentlmsapi.Interfaces.ILoginView;
 import com.abba.talentlmsapi.Models.LoginUser;
+import com.abba.talentlmsapi.Presenters.LoginPresenter;
 import com.abba.talentlmsapi.R;
 import com.abba.talentlmsapi.Services.UserApi;
 import com.abba.talentlmsapi.Util.StringHelpers;
@@ -27,11 +30,13 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements ILoginView {
 
     private EditText etUser;
     private EditText etPass;
     private Button btnIngresar;
+
+    ILoginP presenter;
 
 
 
@@ -44,6 +49,8 @@ public class LoginActivity extends AppCompatActivity {
         etPass=(EditText)findViewById(R.id.etPass);
         btnIngresar=(Button)findViewById(R.id.btnAceptar);
 
+        presenter=new LoginPresenter(this);
+
 
         btnIngresar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,24 +60,9 @@ public class LoginActivity extends AppCompatActivity {
                 user=etUser.getText().toString().trim();
                 pass=etPass.getText().toString().trim();
 
-                if(user!=null && !user.equals(""))
-                {
+                presenter.validate(user,pass);
 
-                    if(pass!=null && !pass.equals(""))
-                    {
 
-                        validateLogin(user,pass);
-
-                    }
-                    else
-                    {
-                        etPass.setError("Ingrese un password");
-                    }
-                }
-                else
-                {
-                    etUser.setError("Ingrese su nombre de usuario");
-                }
 
             }
         });
@@ -78,63 +70,10 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void validateLogin(String user, String pass) {
 
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl("http://192.168.159.15:8080/talentolms/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
+    @Override
+    public void login(String id_user,String id_key) {
 
-            UserApi service = retrofit.create(UserApi.class);
-
-            Call<LoginUser> call=service.setLogin(user,pass);
-
-            call.enqueue(new Callback<LoginUser>() {
-                @Override
-                public void onResponse(Call<LoginUser> call, Response<LoginUser> response) {
-
-                    Log.e("response",response.body().toString());
-
-                    if(!response.isSuccessful())
-                    {
-
-                        Toast.makeText(LoginActivity.this, "Error: "+response.code(), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    else
-                    {
-                        LoginUser user=response.body();
-                        if(user!=null)
-                        {
-                            Log.e("userId",user.getUser_id());
-                            Log.e("userKey",user.getLogin_key());
-                            String userId=user.getUser_id();
-                            String key=user.getLogin_key();
-                            if(!userId.equals("") && !key.equals(""))
-                            {
-
-                                login(userId,key);
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-                @Override
-                public void onFailure(Call<LoginUser> call, Throwable t) {
-
-                    Toast.makeText(LoginActivity.this, "No se pudo ingresar", Toast.LENGTH_SHORT).show();
-
-                }
-            });
-
-
-    }
-
-    private void login(String id_user,String id_key) {
 
         SharedPreferences.Editor editor = getSharedPreferences(StringHelpers.DATA_USER_LOGIN, MODE_PRIVATE).edit();
         editor.putString("id_user", id_user);
@@ -147,10 +86,14 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
 
+
     }
 
 
+    @Override
+    public void showError(String error) {
 
+        Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
 
-
+    }
 }
